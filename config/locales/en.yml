@@ -37,6 +37,7 @@ en:
       filter_votes: the most voted
       filter_rated: the best rated
       filter_topic: "You are seeing %{number} debates with the topic '%{topic}'"
+      search_results: "Showing %{number} debates containing '%{search_term}'"
     debate:
       debate: Debate
       comments:
@@ -133,6 +134,10 @@ en:
     flag_as_inappropiate: Flag as inappropiate
     undo_flag_as_inappropiate: Undo flag as inappropiate
     collective: Collective
+    search_form:
+      search_title: Search
+      search_button: Search
+      search_placeholder: "Search..."
   mailer:
     comment:
       subject: Someone has commented on your debate

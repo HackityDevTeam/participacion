@@ -10,7 +10,7 @@
 // 08. Forms
 // 09. Alerts
 // 10. User account
-// 11. Filters
+// 11. Filters & search
 // 12. Official levels
 // 13. Pagination
 // 14. Tables
@@ -95,7 +95,12 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .button {
+  font-family: $font-family-sans-serif !important;
   padding: rem-calc(15) rem-calc(32);
+}
+
+.postfix.button {
+  padding: 0;
 }
 
 .clear {
@@ -708,7 +713,7 @@ img.initialjs-avatar, img.avatar {
   top: -9px;
 }
 
-// 11. Filters
+// 11. Filters & search
 // - - - - - - - - - - - - - - - - - - - - - - - - -
 
 .filters {
@@ -738,6 +743,23 @@ img.initialjs-avatar, img.avatar {
         font-family: "icons";
       }
     }
+  }
+}
+
+.search-results {
+  @extend .filters;
+}
+
+.search-form {
+
+  h3 {
+    border-top: 1px solid $votes-border;
+    display: inline-block;
+    font-family: $font-family-sans-serif;
+    font-size: rem-calc(16);
+    margin: -1px 0 rem-calc(12);
+    padding-top: rem-calc(6);
+    text-transform: uppercase;
   }
 }
 
