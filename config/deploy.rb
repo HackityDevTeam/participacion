@@ -8,7 +8,7 @@ end
 
 
 set :rails_env, fetch(:stage)
-set :rvm_ruby_version, '2.2.2'
+set :rvm_ruby_version, '2.2.3'
 set :rvm_type, :user
 
 set :application, 'participacion'
@@ -36,6 +36,8 @@ set :local_user, ENV['USER']
 # Run test before deploy
 set :tests, ["spec"]
 
+set :delayed_job_workers, 2
+
 # Config files should be copied by deploy:setup_config
 set(:config_files, %w(
   log_rotation
@@ -45,15 +47,19 @@ set(:config_files, %w(
   sidekiq.yml
 ))
 
-
 namespace :deploy do
   # Check right version of deploy branch
   # before :deploy, "deploy:check_revision"
   # Run test aund continue only if passed
   # before :deploy, "deploy:run_tests"
-  # Compile assets locally and then rsync
-  after 'deploy:symlink:shared', 'deploy:compile_assets_locally'
+
+  # Custom compile and rsync of assets - works, but it is very slow
+  #after 'deploy:symlink:shared', 'deploy:compile_assets_locally'
+
+  after :finishing, 'deploy:beta_testers'
   after :finishing, 'deploy:cleanup'
   # Restart unicorn
   after 'deploy:publishing', 'deploy:restart'
+  # Restart Delayed Jobs
+  after 'deploy:published', 'delayed_job:restart'
 end

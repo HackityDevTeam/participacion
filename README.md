@@ -20,29 +20,35 @@ Las herramientas utilizadas para el frontend no están cerradas aún. Los estilo
 
 ## Configuración para desarrollo y tests
 
-Prerequisitos: tener instalado git, ImageMagick, Ruby 2.2.2, la gema `bundler`, ghostscript y PostgreSQL (9.4 o superior).
+Prerequisitos: tener instalado git, ImageMagick, Ruby 2.2.3, la gema `bundler`, ghostscript y PostgreSQL (9.4 o superior).
 
 ```
 cd participacion
 bundle install
 cp config/database.yml.example config/database.yml
 cp config/secrets.yml.example config/secrets.yml
-bundle exec bin/rake db:setup
-RAILS_ENV=test bundle exec rake db:setup
+bin/rake db:setup
+RAILS_ENV=test bin/rake db:setup
 ```
 
 Para ejecutar la aplicación en local:
 ```
-bundle exec bin/rails s
+bin/rails s
 ```
 
-Prerequisitos para los tests: tener instalado PhantomJS >= 2.0 
+Prerequisitos para los tests: tener instalado PhantomJS >= 2.0
 
 Para ejecutar los tests:
 
 ```
-bundle exec bin/rspec
+bin/rspec
 ```
+
+### OAuth
+
+Para probar los servicios de autenticación mediante proveedores externos OAuth — en este momento Twitter, Facebook y Google —, necesitas crear una "aplicación" en cada una de las plataformas soportadas y configurar la *key* y el *secret* proporcionados en tu *secrets.yml*
+
+En el caso de Google, comprueba que las APIs *Contacts API* y *Google+ API* están habilitadas para la aplicación.
 
 ## Licencia
 

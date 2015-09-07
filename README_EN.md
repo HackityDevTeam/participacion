@@ -21,20 +21,20 @@ Frontend tools used include [SCSS](http://sass-lang.com/) over [Foundation](http
 
 ## Configuration for development and test environments
 
-Prerequisites: install git, ImageMagick, Ruby 2.2.2, bundler gem, ghostscript and PostgreSQL (>=9.4).
+Prerequisites: install git, ImageMagick, Ruby 2.2.3, bundler gem, ghostscript and PostgreSQL (>=9.4).
 
 ```
 cd participacion
 bundle install
 cp config/database.yml.example config/database.yml
 cp config/secrets.yml.example config/secrets.yml
-bundle exec bin/rake db:setup
-RAILS_ENV=test bundle exec rake db:setup
+bin/rake db:setup
+RAILS_ENV=test bin/rake db:setup
 ```
 
 Run the app locally:
 ```
-bundle exec bin/rails s
+bin/rails s
 ```
 
 Prerequisites for testing: install PhantomJS >= 2.0
@@ -42,7 +42,7 @@ Prerequisites for testing: install PhantomJS >= 2.0
 Run the tests with:
 
 ```
-bundle exec bin/rspec
+bin/rspec
 ```
 
 ## Licence

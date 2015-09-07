@@ -5,6 +5,7 @@
 // 03. Show
 // 04. New
 // 05. Comments
+// 06. Flags
 //
 
 // 01. Debates
@@ -133,6 +134,31 @@
       text-decoration: underline;
     }
   }
+
+  .anonymous-votes, .organizations-votes {
+    background: $warning-bg;
+    color: $warning-color;
+    height: 100%;
+    left: 0;
+    line-height: $line-height;
+    padding-top: rem-calc(12);
+    position: absolute;
+    text-align: center;
+    top: 0;
+    width: 100%;
+
+    p {
+      color: $warning-color;
+      margin: 0 rem-calc(12);
+      text-align: left;
+    }
+
+    a {
+      color: $warning-color;
+      font-weight: bold;
+      text-decoration: underline;
+    }
+  }
 }
 
 // 02. Index
@@ -217,7 +243,7 @@
     }
 
     .truncate {
-      background: url('truncate.png');
+      background: image-url('truncate.png');
       background-repeat: repeat-x;
       bottom: 0;
       height: 24px;
@@ -249,13 +275,11 @@
 
   .panel {
     border: 0;
-    margin-bottom: 0;
+    border-radius: 0;
+    border-bottom: 1px solid rgba(0,0,0,.1);
+    margin-bottom: rem-calc(12);
     min-height: rem-calc(192);
-    padding: 0 rem-calc(12) rem-calc(2) rem-calc(12);
-
-    &:first-child {
-      padding-top: rem-calc(24);
-    }
+    padding: rem-calc(12);
 
     .label {
       line-height: $line-height;
@@ -296,10 +320,14 @@
     border: 1px solid $votes-border;
     border-top-left-radius: 3px;
     border-bottom-left-radius: 3px;
-    margin: 0 rem-calc(-24) 0 rem-calc(12);
+    margin: 0 rem-calc(-12);
+
+    @media (min-width: $small-breakpoint) {
+      margin: 0 rem-calc(-24) 0 rem-calc(12);
+    }
 
     &:after {
-      content: "";
+      content: none;
       position: absolute;
       display: block;
       border-style: solid;
@@ -309,12 +337,26 @@
       border-right-color: transparent;
       right: rem-calc(-1);
       border-width: 1em 1em 0 0;
+
+      @media (min-width: $small-breakpoint) {
+        content: "";
+      }
     }
 
     .total-votes {
-      display: block;
+      display: inline-block;
       float: none;
       line-height: $line-height;
+      margin-left: rem-calc(24);
+      padding-top: rem-calc(12);
+      vertical-align: top;
+
+      @media (min-width: $small-breakpoint) {
+        display: block;
+        line-height: $line-height*2;
+        margin-left: 0;
+        padding-top: 0;
+      }
     }
 
     .like {
@@ -329,6 +371,20 @@
     .not-logged {
       line-height: $line-height;
       padding-top: rem-calc(36);
+    }
+
+    .anonymous-votes, .organizations-votes {
+      padding-top: rem-calc(24);
+    }
+
+    .divider {
+      display: none;
+    }
+
+    @media (min-width: $medium-breakpoint) {
+      .divider {
+        display: inline-block;
+      }
     }
   }
 }
@@ -353,6 +409,10 @@
     font-size: rem-calc(24);
     font-weight: bold;
     margin: 0;
+  }
+
+  .edit-debate {
+    margin-bottom: 0;
   }
 
   .debate-info {
@@ -409,6 +469,23 @@
     .not-logged {
       line-height: $line-height;
       padding: rem-calc(24);
+    }
+
+    @media (min-width: $small-breakpoint  + em-calc(1)) and (max-width:$medium-breakpoint) {
+      .in-favor, .against {
+        text-align: left;
+        width: rem-calc(100);
+      }
+    }
+
+    .divider {
+      display: none;
+    }
+
+    @media (min-width: $medium-breakpoint) {
+      .divider {
+        display: inline-block;
+      }
     }
   }
 
@@ -483,6 +560,10 @@
   }
 }
 
+.debate-edit {
+  @extend .debate-new;
+}
+
 // 05. Comments
 // - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -540,6 +621,10 @@
         font-size: rem-calc(12);
         margin: rem-calc(6) 0;
         padding: rem-calc(6);
+
+        .divider {
+          color: $text-light;
+        }
       }
 
       .comment-user {
@@ -567,7 +652,27 @@
           background: $comment-author;
           padding: rem-calc(6) rem-calc(12);
         }
+
+        &.is-admin {
+          background: $comment-admin;
+          padding: rem-calc(6) rem-calc(12);
+        }
+
+        &.is-moderator {
+          @extend .is-admin;
+        }
+
+        &.level-5 {
+          background: $comment-level-5;
+          padding: rem-calc(6) rem-calc(12);
+        }
       }
+    }
+
+    .is-deleted {
+      background: $deleted;
+      margin-left: rem-calc(42);
+      padding: rem-calc(6) rem-calc(12);
     }
 
     .comment-children {
@@ -597,4 +702,18 @@
 
 .faded {
   opacity: 0.4;
+}
+
+// 06. Flags
+// - - - - - - - - - - - - - - - - - - - - - - - - -
+
+.flag-disable {
+  color: $text-medium;
+  line-height: rem-calc(24);
+  vertical-align: middle;
+}
+
+.flag-active {
+  @extend .flag-disable;
+  color: $delete;
 }

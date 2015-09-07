@@ -3,6 +3,7 @@ en:
     settings:
       index:
         title: Global settings
+        update_setting: Update
       flash:
         updated: 'Setting updated!'
     dashboard:
@@ -16,27 +17,31 @@ en:
       hidden_users: Hidden users
       organizations: Organizations
       officials: Officials
+      moderators: Moderators
       stats: Statistics
     organizations:
       index:
         title: Organizations
+        search_placeholder: "Name, email or phone"
+        search: Search
         verify: Verify
         reject: Reject
         verified: Verified
         rejected: Rejected
         filter: Filter
-        edit: Edit
         filters:
           all: All
           pending: Pending
           verified: Verified
           rejected: Rejected
+      search:
+        title: "Search Organizations"
     actions:
       hide: Hide
       hide_author: Ban author
       restore: Restore
       confirm: 'Are you sure?'
-      archive: Archive
+      confirm_hide: Confirm
     tags:
       index:
         title: 'Debate topics'
@@ -44,45 +49,41 @@ en:
       mark_as_featured: 'Propose topic to create debate'
       name:
         placeholder: 'Write a topic'
-      destroy: Delete Tag
+      create: Create Topic
+      update: Update Topic
+      destroy: Delete Topic
     comments:
       index:
         title: Hidden comments
-        show_debate: Show debate
         filter: Filter
-      restore:
-        success: The comment has been restored
-      filters:
-        all: All
-        pending: Pending
-        archived: Archived
+        filters:
+          all: All
+          with_confirmed_hide: Confirmed
+          without_confirmed_hide: Pending
     debates:
       index:
         title: Hidden debates
         filter: Filter
-      show:
-        back: Back
-      restore:
-        success: The debate has been restored
-      filters:
-        all: All
-        pending: Pending
-        archived: Archived
+        filters:
+          all: All
+          with_confirmed_hide: Confirmed
+          without_confirmed_hide: Pending
     users:
       index:
         title: Banned users
-        restore: Restore user
+        filter: Filter
+        filters:
+          all: All
+          with_confirmed_hide: Confirmed
+          without_confirmed_hide: Pending
       show:
         title: "User activity from %{user}"
-        restore: Restore user
         back: Back
         email: "Email:"
         registered_at: "Registered at:"
         hidden_at: "Hidden at:"
-      restore:
-        success: The user has been restored
     officials:
-      level_0: Level 0
+      level_0: Not an official
       level_1: Level 1
       level_2: Level 2
       level_3: Level 3
@@ -90,7 +91,7 @@ en:
       level_5: Level 5
       index:
         title: Officials
-        search_email_placeholder: 'Search user by email'
+        search_placeholder: 'Search user by name or email'
         search: Search
       search:
         title: 'Officials: Search users'
@@ -104,3 +105,14 @@ en:
       flash:
         official_updated: 'Official position saved!'
         official_destroyed: 'User is not an official anymore'
+    moderators:
+      index:
+        title: Moderators
+      search:
+        email_placeholder: 'Search user by email'
+        search: Search
+        user_not_found: 'User not found'
+      moderator:
+        delete: Delete
+        add: Add
+

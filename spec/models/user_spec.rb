@@ -24,10 +24,39 @@ describe User do
     end
   end
 
+  describe "#comment_flags" do
+    let(:user) { create(:user) }
+
+    it "returns {} if no comment" do
+      expect(user.comment_flags([])).to eq({})
+    end
+
+    it "returns a hash of flaggable_ids with 'true' if they were flagged by the user" do
+      comment1 = create(:comment)
+      comment2 = create(:comment)
+      comment3 = create(:comment)
+      Flag.flag(user, comment1)
+      Flag.flag(user, comment3)
+
+      flagged = user.comment_flags([comment1, comment2, comment3])
+
+      expect(flagged[comment1.id]).to be
+      expect(flagged[comment2.id]).to_not be
+      expect(flagged[comment3.id]).to be
+    end
+  end
+
   subject { build(:user) }
 
   it "is valid" do
     expect(subject).to be_valid
+  end
+
+  describe "#terms" do
+    it "is not valid without accepting the terms of service" do
+      subject.terms_of_service = nil
+      expect(subject).to_not be_valid
+    end
   end
 
   describe "#name" do
@@ -46,6 +75,26 @@ describe User do
     describe 'email_on_comment_reply' do
       it 'should be false by default' do
         expect(subject.email_on_comment_reply).to eq(false)
+      end
+    end
+  end
+
+  describe 'OmniAuth' do
+    describe '#email_provided?' do
+      it "is false if the email matchs was temporarely assigned by the OmniAuth process" do
+        subject.email = 'omniauth@participacion-ABCD-twitter.com'
+        expect(subject.email_provided?).to eq(false)
+      end
+
+      it "is true if the email is not omniauth-like" do
+        subject.email = 'manuelacarmena@example.com'
+        expect(subject.email_provided?).to eq(true)
+      end
+
+      it "is true if the user's real email is pending to be confirmed" do
+        subject.email = 'omniauth@participacion-ABCD-twitter.com'
+        subject.unconfirmed_email = 'manuelacarmena@example.com'
+        expect(subject.email_provided?).to eq(true)
       end
     end
   end
@@ -190,18 +239,92 @@ describe User do
     end
   end
 
-  describe "self.with_email" do
+  describe "self.search" do
     it "find users by email" do
       user1 = create(:user, email: "larry@madrid.es")
       create(:user, email: "bird@madrid.es")
-      search = User.with_email("larry@madrid.es")
+      search = User.search("larry@madrid.es")
       expect(search.size).to eq(1)
       expect(search.first).to eq(user1)
     end
 
-    it "returns no results if no email provided" do
-      expect(User.with_email("    ").size).to eq(0)
+    it "find users by name" do
+      user1 = create(:user, username: "Larry Bird")
+      create(:user, username: "Robert Parish")
+      search = User.search("larry")
+      expect(search.size).to eq(1)
+      expect(search.first).to eq(user1)
     end
+
+    it "returns no results if no search term provided" do
+      expect(User.search("    ").size).to eq(0)
+    end
+  end
+
+  describe "verification levels" do
+    it "residence_verified? is true only if residence_verified_at" do
+      user = create(:user, residence_verified_at: Time.now)
+      expect(user.residence_verified?).to eq(true)
+
+      user = create(:user, residence_verified_at: nil)
+      expect(user.residence_verified?).to eq(false)
+    end
+
+    it "sms_verified? is true only if confirmed_phone" do
+      user = create(:user, confirmed_phone: "123456789")
+      expect(user.sms_verified?).to eq(true)
+
+      user = create(:user, confirmed_phone: nil)
+      expect(user.sms_verified?).to eq(false)
+    end
+
+    it "level_two_verified? is true only if residence_verified_at and confirmed_phone" do
+      user = create(:user, confirmed_phone: "123456789", residence_verified_at: Time.now)
+      expect(user.level_two_verified?).to eq(true)
+
+      user = create(:user, confirmed_phone: nil, residence_verified_at: Time.now)
+      expect(user.level_two_verified?).to eq(false)
+
+      user = create(:user, confirmed_phone: "123456789", residence_verified_at: nil)
+      expect(user.level_two_verified?).to eq(false)
+    end
+
+    it "level_three_verified? is true only if verified_at" do
+      user = create(:user, verified_at: Time.now)
+      expect(user.level_three_verified?).to eq(true)
+
+      user = create(:user, verified_at: nil)
+      expect(user.level_three_verified?).to eq(false)
+    end
+
+    it "unverified? is true only if not level_three_verified and not level_two_verified" do
+      user = create(:user, verified_at: nil, confirmed_phone: nil)
+      expect(user.unverified?).to eq(true)
+
+      user = create(:user, verified_at: Time.now, confirmed_phone: "123456789", residence_verified_at: Time.now)
+      expect(user.unverified?).to eq(false)
+    end
+  end
+
+  describe "cache" do
+    let(:user) { create(:user) }
+
+    it "should expire cache with becoming a moderator" do
+      expect { create(:moderator, user: user) }
+      .to change { user.updated_at}
+    end
+
+    it "should expire cache with becoming an admin" do
+      expect { create(:administrator, user: user) }
+      .to change { user.updated_at}
+    end
+
+    it "should expire cache with becoming a veridied organization" do
+      create(:organization, user: user)
+      expect { user.organization.verify }
+      .to change { user.reload.updated_at}
+    end
+
   end
 
 end

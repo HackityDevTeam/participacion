@@ -1,34 +1,40 @@
 class Comment < ActiveRecord::Base
-  include ActsAsParanoidAliases
-  acts_as_nested_set scope: [:commentable_id, :commentable_type], counter_cache: :children_count
-
   acts_as_paranoid column: :hidden_at
+  include ActsAsParanoidAliases
   acts_as_votable
+  has_ancestry
+
+  attr_accessor :as_moderator, :as_administrator
 
   validates :body, presence: true
   validates :user, presence: true
+  validates_inclusion_of :commentable_type, in: ["Debate"]
 
-  belongs_to :commentable, polymorphic: true
+  belongs_to :commentable, -> { with_hidden }, polymorphic: true, counter_cache: true
   belongs_to :user, -> { with_hidden }
 
-  has_many :inappropiate_flags, :as => :flaggable
+  has_many :flags, as: :flaggable
 
-  default_scope { includes(:user) }
   scope :recent, -> { order(id: :desc) }
 
-  scope :sorted_for_moderation, -> { order(inappropiate_flags_count: :desc, updated_at: :desc) }
-  scope :pending_review, -> { where(reviewed_at: nil, hidden_at: nil) }
-  scope :reviewed, -> { where("reviewed_at IS NOT NULL AND hidden_at IS NULL") }
-  scope :flagged_as_inappropiate, -> { where("inappropiate_flags_count > 0") }
+  scope :sort_for_moderation, -> { order(flags_count: :desc, updated_at: :desc) }
+  scope :pending_flag_review, -> { where(ignored_flag_at: nil, hidden_at: nil) }
+  scope :with_ignored_flag, -> { where("ignored_flag_at IS NOT NULL AND hidden_at IS NULL") }
+  scope :flagged, -> { where("flags_count > 0") }
 
-  def self.build(commentable, user, body)
+  scope :for_render, -> { with_hidden.includes(user: :organization) }
+
+  after_create :call_after_commented
+
+  def self.build(commentable, user, body, p_id=nil)
     new commentable: commentable,
         user_id:     user.id,
-        body:        body
+        body:        body,
+        parent_id:   p_id
   end
 
-  def self.find_parent(params)
-    params[:commentable_type].constantize.find(params[:commentable_id])
+  def self.find_commentable(c_type, c_id)
+    c_type.constantize.find(c_id)
   end
 
   def debate
@@ -48,27 +54,43 @@ class Comment < ActiveRecord::Base
   end
 
   def total_votes
-    votes_for.size
+    cached_votes_total
   end
 
-  def not_visible?
-    hidden? || user.hidden?
+  def total_likes
+    cached_votes_up
   end
 
-  def reviewed?
-    reviewed_at.present?
+  def total_dislikes
+    cached_votes_down
   end
 
-  def mark_as_reviewed
-    update(reviewed_at: Time.now)
+  def ignored_flag?
+    ignored_flag_at.present?
   end
 
-  # TODO: faking counter cache since there is a bug with acts_as_nested_set :counter_cache
-  # Remove when https://github.com/collectiveidea/awesome_nested_set/issues/294 is fixed
-  # and reset counters using
-  # > Comment.find_each { |comment| Comment.reset_counters(comment.id, :children) }
-  def children_count
-    children.count
+  def ignore_flag
+    update(ignored_flag_at: Time.now)
+  end
+
+  def as_administrator?
+    administrator_id.present?
+  end
+
+  def as_moderator?
+    moderator_id.present?
+  end
+
+  def after_hide
+    commentable_type.constantize.reset_counters(commentable_id, :comments)
+  end
+
+  def reply?
+    !root?
+  end
+
+  def call_after_commented
+    self.commentable.try(:after_commented)
   end
 
 end

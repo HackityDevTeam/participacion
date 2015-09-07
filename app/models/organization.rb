@@ -1,14 +1,13 @@
 class Organization < ActiveRecord::Base
-
-  belongs_to :user
+  belongs_to :user, touch: true
 
   validates :name, presence: true
 
   delegate :email, :phone_number, to: :user
 
-  scope :pending, -> { where(verified_at: nil, rejected_at: nil) }
-  scope :verified, -> { where("verified_at is not null and (rejected_at is null or rejected_at < verified_at)") }
-  scope :rejected, -> { where("rejected_at is not null and (verified_at is null or verified_at < rejected_at)") }
+  scope :pending, -> { where('organizations.verified_at is null and rejected_at is null') }
+  scope :verified, -> { where("organizations.verified_at is not null and (rejected_at is null or rejected_at < organizations.verified_at)") }
+  scope :rejected, -> { where("rejected_at is not null and (organizations.verified_at is null or organizations.verified_at < rejected_at)") }
 
   def verify
     update(verified_at: Time.now)
@@ -26,6 +25,10 @@ class Organization < ActiveRecord::Base
   def rejected?
     rejected_at.present? &&
       (verified_at.blank? || verified_at < rejected_at)
+  end
+
+  def self.search(text)
+    text.present? ? joins(:user).where("users.email = ? OR users.phone_number = ? OR organizations.name ILIKE ?", text, text, "%#{text}%") : none
   end
 
 end

@@ -22,21 +22,11 @@ class Ability
       can :create, Comment
       can :create, Debate
 
-      can :flag_as_inappropiate, Comment do |comment|
-        comment.author_id != user.id && !InappropiateFlag.flagged?(user, comment)
-      end
+      can [:flag, :unflag], Comment
+      cannot [:flag, :unflag], Comment, user_id: user.id
 
-      can :undo_flag_as_inappropiate, Comment do |comment|
-        comment.author_id != user.id && InappropiateFlag.flagged?(user, comment)
-      end
-
-      can :flag_as_inappropiate, Debate do |debate|
-        debate.author_id != user.id && !InappropiateFlag.flagged?(user, debate)
-      end
-
-      can :undo_flag_as_inappropiate, Debate do |debate|
-        debate.author_id != user.id && InappropiateFlag.flagged?(user, debate)
-      end
+      can [:flag, :unflag], Debate
+      cannot [:flag, :unflag], Debate, author_id: user.id
 
       unless user.organization?
         can :vote, Debate
@@ -53,23 +43,45 @@ class Ability
         can :hide, Comment, hidden_at: nil
         cannot :hide, Comment, user_id: user.id
 
-        can :mark_as_reviewed, Comment, reviewed_at: nil, hidden_at: nil
-        cannot :mark_as_reviewed, Comment, user_id: user.id
+        can :ignore_flag, Comment, ignored_flag_at: nil, hidden_at: nil
+        cannot :ignore_flag, Comment, user_id: user.id
 
         can :hide, Debate, hidden_at: nil
         cannot :hide, Debate, author_id: user.id
 
-        can :mark_as_reviewed, Debate, reviewed_at: nil, hidden_at: nil
-        cannot :mark_as_reviewed, Debate, author_id: user.id
+        can :ignore_flag, Debate, ignored_flag_at: nil, hidden_at: nil
+        cannot :ignore_flag, Debate, author_id: user.id
 
         can :hide, User
         cannot :hide, User, id: user.id
       end
 
+      if user.moderator?
+        can :comment_as_moderator, [Debate, Comment]
+      end
+
       if user.administrator?
         can :restore, Comment
+        cannot :restore, Comment, hidden_at: nil
+
         can :restore, Debate
+        cannot :restore, Debate, hidden_at: nil
+
         can :restore, User
+        cannot :restore, User, hidden_at: nil
+
+        can :confirm_hide, Comment
+        cannot :confirm_hide, Comment, hidden_at: nil
+
+        can :confirm_hide, Debate
+        cannot :confirm_hide, Debate, hidden_at: nil
+
+        can :confirm_hide, User
+        cannot :confirm_hide, User, hidden_at: nil
+
+        can :comment_as_administrator, [Debate, Comment]
+
+        can :manage, Moderator
       end
     end
   end

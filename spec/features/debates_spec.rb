@@ -28,7 +28,7 @@ feature 'Debates' do
       expect(page).to have_content("1")
       expect(page).to have_content("2")
       expect(page).to_not have_content("3")
-      click_link "Next"
+      click_link "Next", exact: false
     end
 
     expect(page).to have_selector('#debates .debate', count: 2)
@@ -60,13 +60,27 @@ feature 'Debates' do
     fill_in 'debate_captcha', with: correct_captcha_text
     check 'debate_terms_of_service'
 
-    click_button 'Create Debate'
+    click_button 'Start a debate'
 
     expect(page).to have_content 'Debate was successfully created.'
     expect(page).to have_content 'Acabar con los desahucios'
     expect(page).to have_content 'Esto es un tema muy importante porque...'
     expect(page).to have_content author.name
     expect(page).to have_content I18n.l(Debate.last.created_at.to_date)
+  end
+
+  scenario 'CKEditor is present before & after turbolinks update page', :js do
+    author = create(:user)
+    login_as(author)
+
+    visit new_debate_path
+
+    expect(page).to have_css "#cke_debate_description"
+
+    click_link 'Debates'
+    click_link 'Start a debate'
+
+    expect(page).to have_css "#cke_debate_description"
   end
 
   scenario 'Captcha is required for debate creation' do
@@ -78,13 +92,13 @@ feature 'Debates' do
     fill_in 'debate_captcha', with: "wrongText!"
     check 'debate_terms_of_service'
 
-    click_button "Create Debate"
+    click_button "Start a debate"
 
     expect(page).to_not have_content "Debate was successfully created."
     expect(page).to have_content "1 error"
 
     fill_in 'debate_captcha', with: correct_captcha_text
-    click_button "Create Debate"
+    click_button "Start a debate"
 
     expect(page).to have_content "Debate was successfully created."
   end
@@ -100,7 +114,7 @@ feature 'Debates' do
     fill_in 'debate_captcha', with: correct_captcha_text
     check 'debate_terms_of_service'
 
-    click_button "Create Debate"
+    click_button "Start a debate"
 
     expect(page).to_not have_content "Debate was successfully created."
     expect(page).to have_content "1 error"
@@ -115,7 +129,7 @@ feature 'Debates' do
     login_as(author)
 
     visit new_debate_path
-    click_button 'Create Debate'
+    click_button 'Start a debate'
     expect(page).to have_content error_message
   end
 
@@ -129,7 +143,7 @@ feature 'Debates' do
     fill_in 'debate_captcha', with: correct_captcha_text
     check 'debate_terms_of_service'
 
-    click_button 'Create Debate'
+    click_button 'Start a debate'
 
     expect(page).to have_content 'Debate was successfully created.'
     expect(page).to have_content 'A test'
@@ -161,7 +175,7 @@ feature 'Debates' do
         find('.js-add-tag-link', text: tag_name).click
       end
 
-      click_button 'Create Debate'
+      click_button 'Start a debate'
 
       expect(page).to have_content 'Debate was successfully created.'
       ['Medio Ambiente', 'Ciencia'].each do |tag_name|
@@ -179,7 +193,7 @@ feature 'Debates' do
 
       fill_in 'debate_tag_list', with: 'user_id=1, &a=3, <script>alert("hey");</script>'
 
-      click_button 'Create Debate'
+      click_button 'Start a debate'
 
       expect(page).to have_content 'Debate was successfully created.'
       expect(page).to have_content 'user_id1'
@@ -222,7 +236,7 @@ feature 'Debates' do
     fill_in 'debate_description', with: "Let's..."
     fill_in 'debate_captcha', with: correct_captcha_text
 
-    click_button "Update Debate"
+    click_button "Save changes"
 
     expect(page).to have_content "Debate was successfully updated."
     expect(page).to have_content "End child poverty"
@@ -235,7 +249,7 @@ feature 'Debates' do
 
     visit edit_debate_path(debate)
     fill_in 'debate_title', with: ""
-    click_button 'Update Debate'
+    click_button "Save changes"
 
     expect(page).to have_content error_message
   end
@@ -249,13 +263,13 @@ feature 'Debates' do
 
     fill_in 'debate_title', with: "New title"
     fill_in 'debate_captcha', with: "wrong!"
-    click_button "Update Debate"
+    click_button "Save changes"
 
     expect(page).to_not have_content "Debate was successfully updated."
     expect(page).to have_content "1 error"
 
     fill_in 'debate_captcha', with: correct_captcha_text
-    click_button "Update Debate"
+    click_button "Save changes"
 
     expect(page).to have_content "Debate was successfully updated."
   end
@@ -271,7 +285,7 @@ feature 'Debates' do
 
     fill_in 'debate_title', with: ""
     fill_in 'debate_captcha', with: correct_captcha_text
-    click_button "Update Debate"
+    click_button "Save changes"
 
     expect(page).to_not have_content "Debate was successfully updated."
     expect(page).to have_content "1 error"
@@ -282,20 +296,13 @@ feature 'Debates' do
   end
 
   describe 'Limiting tags shown' do
-    tags = ["Hacienda", "Economía", "Medio Ambiente", "Corrupción", "Fiestas populares", "Prensa", "Huelgas"]
-    let(:all_tags) { tags }
-    let(:debate)   { create :debate, tag_list: all_tags }
-
     scenario 'Index page shows up to 5 tags per debate' do
-      debate
-      visible_tags = ["Medio Ambiente", "Corrupción", "Fiestas populares", "Prensa", "Huelgas"]
+      tag_list = ["Hacienda", "Economía", "Medio Ambiente", "Corrupción", "Fiestas populares", "Prensa", "Huelgas"]
+      create :debate, tag_list: tag_list
 
       visit debates_path
 
       within('.debate .tags') do
-        visible_tags.each do |tag|
-          expect(page).to have_content tag
-        end
         expect(page).to have_content '2+'
       end
     end
@@ -315,7 +322,7 @@ feature 'Debates' do
     end
   end
 
-  scenario "Flagging as inappropiate", :js do
+  scenario "Flagging", :js do
     user = create(:user)
     debate = create(:debate)
 
@@ -323,29 +330,127 @@ feature 'Debates' do
     visit debate_path(debate)
 
     within "#debate_#{debate.id}" do
-      expect(page).to_not have_link "Undo flag as inappropiate"
-      click_on 'Flag as inappropiate'
-      expect(page).to have_link "Undo flag as inappropiate"
+      page.find("#flag-expand-debate-#{debate.id}").click
+      page.find("#flag-debate-#{debate.id}").click
+
+      expect(page).to have_css("#unflag-expand-debate-#{debate.id}")
     end
 
-    expect(InappropiateFlag.flagged?(user, debate)).to be
+    expect(Flag.flagged?(user, debate)).to be
   end
 
-  scenario "Undoing flagging as inappropiate", :js do
+  scenario "Unflagging", :js do
     user = create(:user)
     debate = create(:debate)
-    InappropiateFlag.flag!(user, debate)
+    Flag.flag(user, debate)
 
     login_as(user)
     visit debate_path(debate)
 
     within "#debate_#{debate.id}" do
-      expect(page).to_not have_link("Flag as inappropiate", exact: true)
-      click_on 'Undo flag as inappropiate'
-      expect(page).to have_link("Flag as inappropiate", exact: true)
+      page.find("#unflag-expand-debate-#{debate.id}").click
+      page.find("#unflag-debate-#{debate.id}").click
+
+      expect(page).to have_css("#flag-expand-debate-#{debate.id}")
     end
 
-    expect(InappropiateFlag.flagged?(user, debate)).to_not be
+    expect(Flag.flagged?(user, debate)).to_not be
   end
 
+  feature 'Debate index order filters' do
+
+    scenario 'Default order is hot_score', :js do
+      create(:debate, title: 'best').update_column(:hot_score, 10)
+      create(:debate, title: 'worst').update_column(:hot_score, 2)
+      create(:debate, title: 'medium').update_column(:hot_score, 5)
+
+      visit debates_path
+
+      expect('best').to appear_before('medium')
+      expect('medium').to appear_before('worst')
+    end
+
+    scenario 'Debates are ordered by best rated', :js do
+      create(:debate, title: 'best',   cached_votes_score: 10)
+      create(:debate, title: 'medium', cached_votes_score: 5)
+      create(:debate, title: 'worst',  cached_votes_score: 2)
+
+      visit debates_path
+      select 'best rated', from: 'order-selector'
+
+      within '#debates.js-order-score' do
+        expect('best').to appear_before('medium')
+        expect('medium').to appear_before('worst')
+      end
+
+      expect(current_url).to include('order=score')
+    end
+
+    scenario 'Debates are ordered by most commented', :js do
+      create(:debate, title: 'best',   comments_count: 10)
+      create(:debate, title: 'medium', comments_count: 5)
+      create(:debate, title: 'worst',  comments_count: 2)
+
+      visit debates_path
+      select 'most commented', from: 'order-selector'
+
+      within '#debates.js-order-most-commented' do
+        expect('best').to appear_before('medium')
+        expect('medium').to appear_before('worst')
+      end
+
+      expect(current_url).to include('order=most_commented')
+    end
+
+    scenario 'Debates are ordered by newest', :js do
+      create(:debate, title: 'best',   created_at: Time.now)
+      create(:debate, title: 'medium', created_at: Time.now - 1.hour)
+      create(:debate, title: 'worst',  created_at: Time.now - 1.day)
+
+      visit debates_path
+      select 'newest', from: 'order-selector'
+
+      within '#debates.js-order-created-at' do
+        expect('best').to appear_before('medium')
+        expect('medium').to appear_before('worst')
+      end
+
+      expect(current_url).to include('order=created_at')
+    end
+
+    scenario 'Debates are ordered randomly', :js do
+      create_list(:debate, 12)
+      visit debates_path
+
+      select 'random', from: 'order-selector'
+      debates_first_time = find("#debates.js-order-random").text
+
+      select 'most commented', from: 'order-selector'
+      expect(page).to have_selector('#debates.js-order-most-commented')
+
+      select 'random', from: 'order-selector'
+      debates_second_time = find("#debates.js-order-random").text
+
+      expect(debates_first_time).to_not eq(debates_second_time)
+    end
+  end
+
+  scenario 'Debate index search' do
+    debate1 = create(:debate, title: "Show me what you got")
+    debate2 = create(:debate, title: "Get Schwifty")
+    debate3 = create(:debate, description: "Unity")
+    debate4 = create(:debate, description: "Schwifty in here")
+
+    visit debates_path
+    fill_in "search", with: "Schwifty"
+    click_button "Search"
+
+    within("#debates") do
+      expect(page).to have_css('.debate', count: 2)
+      expect(page).to have_content(debate2.title)
+      expect(page).to have_content(debate4.title)
+      expect(page).to_not have_content(debate1.title)
+      expect(page).to_not have_content(debate3.title)
+    end
+  end
 end

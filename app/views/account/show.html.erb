@@ -1,43 +1,60 @@
 <div class="row account">
   <div class="small-12 column">
-    <%= link_to t("account.show.change_credentials_link"), edit_user_registration_path, class: 'button radius small secondary right' %>
+    <%= link_to t("account.show.change_credentials_link"), edit_user_registration_path, class: "button radius small secondary right" %>
+
+    <div class="verification">
+      <span class="right verify-account">
+        <% if current_user.level_three_verified? %>
+          <p class="verified">
+            <i class="icon-check"></i>
+            <%= t("account.show.verified_account") %>
+          </p>
+        <% elsif current_user.level_two_verified? %>
+          <%= link_to t("account.show.finish_verification"), new_letter_path, class: "button radius small success right" %>
+        <% else %>
+          <%= link_to t("account.show.verify_my_account"), new_residence_path, class: "button radius small success right" %>
+        <% end %>
+      </span>
+    </div>
 
     <h1 class="inline-block"><%= t("account.show.title") %></h1>
 
     <%= form_for @account, as: :account, url: account_path do |f| %>
-      <%= render 'shared/errors', resource: @account %>
+      <%= render "shared/errors", resource: @account %>
 
       <div class="row">
-        <div class="small-12 medium-6 column">
+        <div class="small-12 column">
+          <h2><%= t("account.show.avatar")%></h2>
+          <%= avatar_image(@account, seed: @account.id, size: 60) %>
+
           <h2><%= t("account.show.personal")%></h2>
 
+            <div class="small-12 medium-4">
           <% if @account.organization? %>
-
             <%= f.fields_for :organization do |fo| %>
               <%= fo.text_field :name, autofocus: true, placeholder: t("account.show.organization_name_label") %>
             <% end %>
             <%= f.text_field :phone_number, placeholder: t("account.show.phone_number_label") %>
 
-          <% else %>
+            <% else %>
             <%= f.text_field :username, placeholder: t("account.show.username_label") %>
           <% end %>
-
-        </div>
-
-        <div class="small-12 medium-6 column">
-          <h2><%= t("account.show.avatar")%></h2>
-          <%= avatar_image(@account, size: 100) %>
+          </div>
 
           <h2><%= t("account.show.notifications")%></h2>
 
           <div>
-            <%= f.check_box :email_on_debate_comment, label: false %>
-            <span class="checkbox"><%= t("account.show.email_on_debate_comment_label") %></span>
+            <%= f.label :email_on_debate_comment do %>
+              <%= f.check_box :email_on_debate_comment, label: false %>
+              <span class="checkbox"><%= t("account.show.email_on_debate_comment_label") %></span>
+            <% end %>
           </div>
 
           <div>
-            <%= f.check_box :email_on_comment_reply, label: false %>
-            <span class="checkbox"><%= t("account.show.email_on_comment_reply_label") %></span>
+            <%= f.label :email_on_comment_reply do %>
+              <%= f.check_box :email_on_comment_reply, label: false %>
+              <span class="checkbox"><%= t("account.show.email_on_comment_reply_label") %></span>
+            <% end %>
           </div>
         </div>
 

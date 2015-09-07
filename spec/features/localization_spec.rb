@@ -6,13 +6,13 @@ feature 'Localization' do
     visit root_path(locale: :es)
     visit root_path(locale: :klingon)
 
-    expect(page).to have_text('Estamos abriendo Madrid')
+    expect(page).to have_text('La ciudad que quieres, será la ciudad que quieras.')
   end
 
   scenario 'Available locales appear in the locale switcher' do
     visit '/'
 
-    within('.js-locale-switcher') do
+    within('.locale-form .js-location-changer') do
       expect(page).to have_content 'Español'
       expect(page).to have_content 'English'
     end
@@ -25,11 +25,22 @@ feature 'Localization' do
 
   scenario 'Changing the locale', :js do
     visit '/'
-    expect(page).to have_content('Site language')
+    expect(page).to have_content('Language')
 
     select('Español', from: 'locale-switcher')
-    expect(page).to have_content('Idioma de la página')
-    expect(page).to_not have_content('Site language')
+    expect(page).to have_content('Idioma')
+    expect(page).to_not have_content('Language')
     expect(page).to have_select('locale-switcher', selected: 'Español')
+  end
+
+  scenario 'Locale switcher not present if only one locale' do
+    initial_locales = I18n.available_locales
+    I18n.available_locales = [:en]
+
+    visit '/'
+    expect(page).to_not have_content('Language')
+    expect(page).to_not have_css('div.locale')
+
+    I18n.available_locales = initial_locales
   end
 end

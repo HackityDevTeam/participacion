@@ -4,7 +4,7 @@ feature 'Moderate Comments' do
 
   feature 'Hiding Comments' do
 
-    scenario 'Hide', :js do
+    scenario 'Hide without children hides the comment completely', :js do
       citizen = create(:user)
       moderator = create(:moderator)
 
@@ -23,7 +23,7 @@ feature 'Moderate Comments' do
       visit debate_path(debate)
 
       expect(page).to have_css('.comment', count: 1)
-      expect(page).to have_content('This comment has been deleted')
+      expect(page).to_not have_content('This comment has been deleted')
       expect(page).to_not have_content('SPAM')
     end
 
@@ -102,67 +102,64 @@ feature 'Moderate Comments' do
 
     scenario "Current filter is properly highlighted" do
       visit moderation_comments_path
-      expect(page).to_not have_link('All')
-      expect(page).to have_link('Pending')
-      expect(page).to have_link('Reviewed')
+      expect(page).to_not have_link('Pending')
+      expect(page).to have_link('All')
+      expect(page).to have_link('Ignored')
 
       visit moderation_comments_path(filter: 'all')
       expect(page).to_not have_link('All')
       expect(page).to have_link('Pending')
-      expect(page).to have_link('Reviewed')
+      expect(page).to have_link('Ignored')
 
-      visit moderation_comments_path(filter: 'pending_review')
+      visit moderation_comments_path(filter: 'pending_flag_review')
       expect(page).to have_link('All')
       expect(page).to_not have_link('Pending')
-      expect(page).to have_link('Reviewed')
+      expect(page).to have_link('Ignored')
 
-      visit moderation_comments_path(filter: 'reviewed')
+      visit moderation_comments_path(filter: 'with_ignored_flag')
       expect(page).to have_link('All')
       expect(page).to have_link('Pending')
-      expect(page).to_not have_link('Reviewed')
+      expect(page).to_not have_link('Ignored')
     end
 
     scenario "Filtering comments" do
-      create(:comment, :flagged_as_inappropiate, body: "Pending comment")
-      create(:comment, :flagged_as_inappropiate, :hidden, body: "Hidden comment")
-      create(:comment, :flagged_as_inappropiate, :reviewed, body: "Reviewed comment")
+      create(:comment, :flagged, body: "Pending comment")
+      create(:comment, :flagged, :hidden, body: "Hidden comment")
+      create(:comment, :flagged, :with_ignored_flag, body: "Ignored comment")
 
       visit moderation_comments_path(filter: 'all')
       expect(page).to have_content('Pending comment')
       expect(page).to_not have_content('Hidden comment')
-      expect(page).to have_content('Reviewed comment')
+      expect(page).to have_content('Ignored comment')
 
-      visit moderation_comments_path(filter: 'pending_review')
+      visit moderation_comments_path(filter: 'pending_flag_review')
       expect(page).to have_content('Pending comment')
       expect(page).to_not have_content('Hidden comment')
-      expect(page).to_not have_content('Reviewed comment')
+      expect(page).to_not have_content('Ignored comment')
 
-      visit moderation_comments_path(filter: 'reviewed')
+      visit moderation_comments_path(filter: 'with_ignored_flag')
       expect(page).to_not have_content('Pending comment')
       expect(page).to_not have_content('Hidden comment')
-      expect(page).to have_content('Reviewed comment')
+      expect(page).to have_content('Ignored comment')
     end
 
     scenario "Reviewing links remember the pagination setting and the filter" do
       per_page = Kaminari.config.default_per_page
-      (per_page + 2).times { create(:comment, :flagged_as_inappropiate) }
+      (per_page + 2).times { create(:comment, :flagged) }
 
-      visit moderation_comments_path(filter: 'pending_review', page: 2)
+      visit moderation_comments_path(filter: 'pending_flag_review', page: 2)
 
-      click_link('Mark as reviewed', match: :first)
+      click_link('Ignore', match: :first, exact: true)
 
-      uri = URI.parse(current_url)
-      query_params = Rack::Utils.parse_nested_query(uri.query).symbolize_keys
-
-      expect(query_params[:filter]).to eq('pending_review')
-      expect(query_params[:page]).to eq('2')
+      expect(current_url).to include('filter=pending_flag_review')
+      expect(current_url).to include('page=2')
     end
 
     feature 'A flagged comment exists' do
 
       background do
         debate = create(:debate, title: 'Democracy')
-        @comment = create(:comment, :flagged_as_inappropiate, commentable: debate, body: 'spammy spam')
+        @comment = create(:comment, :flagged, commentable: debate, body: 'spammy spam')
         visit moderation_comments_path
       end
 
@@ -172,7 +169,7 @@ feature 'Moderate Comments' do
           expect(page).to have_content('spammy spam')
           expect(page).to have_content('1')
           expect(page).to have_link('Hide')
-          expect(page).to have_link('Mark as reviewed')
+          expect(page).to have_link('Ignore')
         end
       end
 
@@ -187,18 +184,20 @@ feature 'Moderate Comments' do
         expect(@comment.reload).to be_hidden
       end
 
-      scenario 'Marking the comment as reviewed' do
+      scenario 'Marking the comment as ignored' do
         within("#comment_#{@comment.id}") do
-          click_link('Mark as reviewed')
+          click_link('Ignore')
         end
 
         expect(current_path).to eq(moderation_comments_path)
 
+        click_link('Ignored')
+
         within("#comment_#{@comment.id}") do
-          expect(page).to have_content('Reviewed')
+          expect(page).to have_content('Ignored')
         end
 
-        expect(@comment.reload).to be_reviewed
+        expect(@comment.reload).to be_ignored_flag
       end
     end
   end

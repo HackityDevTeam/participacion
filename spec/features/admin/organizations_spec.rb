@@ -2,7 +2,6 @@ require 'rails_helper'
 
 feature 'Admin::Organizations' do
 
-
   background do
     administrator = create(:user)
     create(:administrator, user: administrator)
@@ -10,53 +9,129 @@ feature 'Admin::Organizations' do
     login_as(administrator)
   end
 
-  scenario "pending organizations have links to verify and reject" do
+  context "Search" do
+
+    background do
+      @user = create(:user, email: "marley@humanrights.com", phone_number: "6764440002")
+      create(:organization, user: @user, name: "Get up, Stand up")
+    end
+
+    scenario "returns no results if search term is empty" do
+      visit admin_organizations_path
+      expect(page).to have_content("Get up, Stand up")
+
+      fill_in "term", with: "      "
+      click_button "Search"
+
+      expect(current_path).to eq(search_admin_organizations_path)
+      within("#search-results") do
+        expect(page).to_not have_content("Get up, Stand up")
+      end
+    end
+
+    scenario "finds by name" do
+      visit search_admin_organizations_path
+      expect(page).to_not have_content("Get up, Stand up")
+
+      fill_in "term", with: "Up, sta"
+      click_button "Search"
+
+      within("#search-results") do
+        expect(page).to have_content("Get up, Stand up")
+      end
+    end
+
+    scenario "finds by users email" do
+      visit search_admin_organizations_path
+      expect(page).to_not have_content("Get up, Stand up")
+
+      fill_in "term", with: @user.email
+      click_button "Search"
+
+      within("#search-results") do
+        expect(page).to have_content("Get up, Stand up")
+      end
+    end
+
+    scenario "finds by users phone number" do
+      visit search_admin_organizations_path
+      expect(page).to_not have_content("Get up, Stand up")
+
+      fill_in "term", with: @user.phone_number
+      click_button "Search"
+
+      within("#search-results") do
+        expect(page).to have_content("Get up, Stand up")
+      end
+    end
+  end
+
+  scenario "Pending organizations have links to verify and reject" do
     organization = create(:organization)
 
     visit admin_organizations_path
-    expect(page).to have_link('Verify')
-    expect(page).to have_link('Reject')
+    within("#organization_#{organization.id}") do
+      expect(current_path).to eq(admin_organizations_path)
+      expect(page).to have_link('Verify')
+      expect(page).to have_link('Reject')
 
-    click_on 'Verify'
+      click_on 'Verify'
+    end
     expect(current_path).to eq(admin_organizations_path)
     expect(page).to have_content ('Verified')
 
     expect(organization.reload.verified?).to eq(true)
   end
 
-  scenario "verified organizations have link to reject" do
+  scenario "Verified organizations have link to reject" do
     organization = create(:organization, :verified)
 
     visit admin_organizations_path
-    expect(page).to have_content ('Verified')
-    expect(page).to_not have_link('Verify')
-    expect(page).to have_link('Reject')
 
-    click_on 'Reject'
+    click_on "Verified"
+
+    within("#organization_#{organization.id}") do
+      expect(page).to have_content ('Verified')
+      expect(page).to_not have_link('Verify')
+      expect(page).to have_link('Reject')
+
+      click_on 'Reject'
+    end
     expect(current_path).to eq(admin_organizations_path)
+    expect(page).to_not have_content (organization.name)
+
+    click_on 'Rejected'
     expect(page).to have_content ('Rejected')
+    expect(page).to have_content (organization.name)
 
     expect(organization.reload.rejected?).to eq(true)
   end
 
-  scenario "rejected organizations have link to verify" do
+  scenario "Rejected organizations have link to verify" do
     organization = create(:organization, :rejected)
 
     visit admin_organizations_path
-    expect(page).to have_link('Verify')
-    expect(page).to_not have_link('Reject', exact: true)
+    click_on "Rejected"
 
-    click_on 'Verify'
+    within("#organization_#{organization.id}") do
+      expect(page).to have_link('Verify')
+      expect(page).to_not have_link('Reject', exact: true)
+
+      click_on 'Verify'
+    end
     expect(current_path).to eq(admin_organizations_path)
-    expect(page).to have_content ('Verified')
+    expect(page).to_not have_content (organization.name)
+    click_on('Verified')
+
+    expect(page).to have_content (organization.name)
 
     expect(organization.reload.verified?).to eq(true)
   end
 
   scenario "Current filter is properly highlighted" do
     visit admin_organizations_path
-    expect(page).to_not have_link('All')
-    expect(page).to have_link('Pending')
+    expect(page).to_not have_link('Pending')
+    expect(page).to have_link('All')
     expect(page).to have_link('Verified')
     expect(page).to have_link('Rejected')
 
@@ -119,11 +194,8 @@ feature 'Admin::Organizations' do
 
     click_on('Verify', match: :first)
 
-    uri = URI.parse(current_url)
-    query_params = Rack::Utils.parse_nested_query(uri.query).symbolize_keys
-
-    expect(query_params[:filter]).to eq('pending')
-    expect(query_params[:page]).to eq('2')
+    expect(current_url).to include('filter=pending')
+    expect(current_url).to include('page=2')
   end
 
 end

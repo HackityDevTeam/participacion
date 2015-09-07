@@ -24,7 +24,9 @@ data:
     - config/locales/%{locale}.yml
     - config/locales/admin.%{locale}.yml
     - config/locales/moderation.%{locale}.yml
+    - config/locales/verification.%{locale}.yml
     - config/locales/mailers.%{locale}.yml
+    - config/locales/pages.%{locale}.yml
     - config/locales/devise_views.%{locale}.yml
     - config/locales/responders.%{locale}.yml
     - config/locales/kaminari.%{locale}.yml
@@ -96,10 +98,17 @@ ignore_missing:
 ## Consider these keys used:
 ignore_unused:
   - 'activerecord.*'
-  - 'admin.organizations.index.filter.*'
+  - 'activemodel.*'
   - 'unauthorized.*'
   - 'simple_captcha.*'
   - 'admin.officials.level_*'
+  - 'admin.comments.index.filter*'
+  - 'admin.debates.index.filter*'
+  - 'admin.organizations.index.filter*'
+  - 'admin.users.index.filter*'
+  - 'moderation.comments.index.filter*'
+  - 'moderation.debates.index.filter*'
+  - 'debates.index.orders.*'
   - 'helpers.page_entries_info.*' # kaminari
   - 'views.pagination.*' # kaminari
 # - '{devise,kaminari,will_paginate}.*'

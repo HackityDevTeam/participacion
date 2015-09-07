@@ -21,10 +21,20 @@ RSpec.configure do |config|
   config.before(:each) do |example|
     DatabaseCleaner.strategy = example.metadata[:js] ? :truncation : :transaction
     DatabaseCleaner.start
+    load "#{Rails.root}/db/seeds.rb"
   end
 
   config.after(:each) do
     DatabaseCleaner.clean
+  end
+
+  config.before(:each, type: :feature) do
+    Bullet.start_request
+  end
+
+  config.after(:each, type: :feature) do
+    Bullet.perform_out_of_channel_notifications if Bullet.notification?
+    Bullet.end_request
   end
 
   # Allows RSpec to persist some state between runs in order to support
@@ -57,4 +67,6 @@ RSpec.configure do |config|
   # test failures related to randomization by passing the same `--seed` value
   # as the one that triggered the failure.
   Kernel.srand config.seed
+
+
 end

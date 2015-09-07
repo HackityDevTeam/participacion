@@ -3,40 +3,85 @@ es:
   layouts:
     header:
       external_link_transparency: Transparencia
+      external_link_transparency_url: "http://www.madrid.es/portales/munimadrid/es/Inicio/El-Ayuntamiento/Transparencia?vgnextfmt=default&vgnextchannel=20fd850769797310VgnVCM2000000c205a0aRCRD"
       external_link_opendata: Datos abiertos
+      external_link_opendata_url: "http://datos.madrid.es"
       external_link_blog: Blog
+      external_link_blog_url: "/blog"
       open_gov: "Gobierno %{open}"
       open: "abierto"
+      logo: "Gobierno abierto | Participación"
       participation: Participación
-      menu: Menú
-      open_city: Estamos abriendo Madrid
-      open_city_slogan: Para que todos los madrileños decidamos que ciudad queremos tener.
+      open_city_title: "La ciudad que quieres será la ciudad que quieras."
+      open_city_slogan:
+        "Empecemos escuchando qué tiene que decir Madrid.
+        Para ello abrimos esta Puerta del Sol digital, donde toda la gente de Madrid podemos encontrarnos para debatir y compartir todo lo que queramos.
+        Es también un espacio donde poder hablar directamente con las personas que trabajamos en el Ayuntamiento de Madrid, incluyendo a los concejales y a la Alcaldesa."
+      open_city_text:
+        "Aquí cualquier voz tiene su espacio y son los ciudadanos y ciudadanas, y nadie en su nombre, quienes deciden votando los debates cuáles son los temas
+         más importantes de cada momento. Los responsables del gobierno tienen cuentas de usuario propias con las que podrán participar en los debates, y ser evaluados
+         al mismo nivel que todos los demás."
+      open_city_soon: "Muy pronto abriremos la sección de propuestas ciudadanas, donde cualquiera podrá presentar propuestas y, si reciben apoyo, serán puestas en marcha por el Ayuntamiento."
       see_all_debates: Ver todos los debates
       my_account_link: Mi cuenta
-      locale: "Idioma de la página:"
+      locale: "Idioma:"
       administration: Administrar
       moderation: Moderar
-      welcome: Portada
-      how_it_works: "Cómo funciona"
+      # welcome: Portada
+      more_information: "Más información"
       debates: Debates
-      initiatives: Iniciativas
+      # initiatives: Iniciativas
     footer:
-      copyright: "Ayuntamiento de Madrid, %{year}. Todos los derechos reservados"
+      description:
+        "La ciudad que quieres, será la ciudad que quieras. %{more_info} sobre esta página.
+        Este Portal de Gobierno Abierto es %{open_source}, y su código se encuentra en %{github}.
+        De Madrid, para el mundo entero."
+      more_info: Obtén más información
+      more_info_url: "/more_information"
+      open_source: "software libre AGPLv3"
+      open_source_url: "http://www.gnu.org/licenses/agpl-3.0.html"
+      github: "github"
+      github_url: "https://github.com/ayuntamientomadrid"
+      copyright: "Ayuntamiento de Madrid, %{year}"
+      participation_title: "Participación"
+      participation_text: "Decide cómo debe ser la ciudad de Madrid que quieres."
+      transparency_title: Transparencia
+      transparency_text: "Obtén cualquier información sobre el Ayuntamiento de Madrid."
+      open_data_title: Datos Abiertos
+      open_data_text: "Todos los datos del Ayuntamiento son tuyos."
+      contact_us: "Contacta con nosotros en"
+      privacy: "Política de privacidad"
+      conditions: "Condiciones de uso"
   form:
       error: error
       errors: errores
       not_saved: "impidieron guardar %{resource}:"
-      accept_terms: Acepto la política de privacidad y el aviso legal
+      accept_terms: "Acepto la %{policy} y las %{conditions}"
+      policy: "Política de privacidad"
+      conditions: "Condiciones de uso"
       user: la cuenta
       debate: el debate
+      verification::sms: el teléfono
+  application:
+    alert:
+      only_beta_testers: "Lo sentimos sólo los usuarios de pruebas tienen acceso de momento"
   debates:
     index:
-      create_debate: Crea un debate
-      showing: "Estás viendo los debates"
-      filter_news: "más nuevos"
-      filter_votes: "más votados"
-      filter_rated: mejor valorados
-      filter_topic: "Estás viendo %{number} debates con el tema '%{topic}'"
+      start_debate: Empieza un debate
+      select_order: Ordenar por
+      select_order_long: Estás viendo los debates
+      orders:
+        hot_score: "más activos"
+        created_at: "más nuevos"
+        score: "mejor valorados"
+        most_commented: "más comentados"
+        random: "aleatorio"
+      filter_topic:
+        one: " con el tema '%{topic}'"
+        other: " con el tema '%{topic}'"
+      search_results:
+        one: " que contiene '%{search_term}'"
+        other: " que contienen '%{search_term}'"
     debate:
       debate: Debate
       comments:
@@ -49,6 +94,8 @@ es:
         other: "%{count} votos"
     comment:
       author: Autor del debate
+      moderator: Moderador
+      admin: Administrador
       deleted: Este comentario ha sido eliminado
       user_deleted: Usuario eliminado
       responses:
@@ -59,16 +106,13 @@ es:
         zero: Sin votos
         one: 1 voto
         other: "%{count} votos"
-      votes_weighted_score: "Total: %{score}"
     form:
       debate_title: Título del debate
-      title_instructions: "Sé claro y conciso a la hora de poner un título, pero recuerda que debe explicar bien tu idea, ¡es tu carta de entrada!"
-      debate_text: Describe tu opinión
-      text_instructions: "Explica con todo el detalle que puedas y de una manera sencilla la idea y que crees que conseguiríamos con ella"
+      debate_text: Texto inicial del debate
       tags_label: Temas
       tags_instructions: >
-        Etiqueta esta idea. Puedes elegir entre nuestras propuestas o introducir las que desees.
-        Para ello solo tienes que escribir las etiquetas que desees separadas por "," y pulsar "intro".
+        Etiqueta este debate. Puedes elegir entre nuestras propuestas o introducir las que desees.
+        Para ello solo tienes que escribir las etiquetas que desees separadas por ",".
         Algunas recomendaciones:
     show:
       back_link: Volver
@@ -85,16 +129,29 @@ es:
       editing: Editar debate
       show_link: Ver debate
       back_link: Volver
+      form:
+        submit_button: "Guardar cambios"
     new:
-      publish_new: Publicar debate nuevo
+      start_new: Empezar un debate
       back_link: Volver
       recommendations_title: Recomendaciones para crear un debate
-      recommendation_one: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore"
-      recommendation_two: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore"
-      recommendation_three: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore"
+      recommendation_one: "No escribas el título del debate o frases enteras en mayúsculas. En internet eso se considera gritar. Y a nadie le gusta que le griten."
+      recommendation_two: "Cualquier debate o comentario que implique una acción ilegal será eliminado, también los que tengan la intención de sabotear los espacios de debate, todo lo demás está permitido."
+      recommendation_three: "Las críticas despiadadas son muy bienvenidas. Este es un espacio de pensamiento. Pero te recomendamos conservar la elegancia y la inteligencia. El mundo es mejor con ellas presentes."
+      recommendation_four: "Disfruta de este espacio, de las voces que lo llenan, también es tuyo."
+      form:
+        submit_button: "Empieza un debate"
+    create:
+      form:
+        submit_button: "Empieza un debate"
+    update:
+      form:
+        submit_button: "Guardar cambios"
   comments:
     form:
-        leave_comment: Deja tu comentario
+      leave_comment: Deja tu comentario
+      comment_as_moderator: Comentar como moderador
+      comment_as_admin: Comentar como administrador
   comments_helper:
     comment_link: Comentar
     comment_button: Publicar comentario
@@ -107,6 +164,9 @@ es:
     unauthenticated: "Necesitas %{signin} o %{signup} para continuar."
     signin: iniciar sesión
     signup: registrarte
+    anonymous: "Este debate ya tiene demasiados votos anónimos, para poder votar %{verify_account}."
+    verify_account: verifica tu cuenta
+    organizations: Las organizaciones no pueden votar
   account:
     show:
       title: "Mi cuenta"
@@ -120,19 +180,26 @@ es:
       phone_number_label: "Teléfono"
       organization_name_label: "Nombre de la organización"
       notifications: Notificaciones
+      finish_verification: "Finalizar verificación"
+      verified_account: Cuenta verificada
+      verify_my_account: Verificar mi cuenta
   simple_captcha:
     placeholder: "Introduce el texto de la imagen"
-    label: "Introduce el texto en la caja"
+    label: "Introduce el texto de la imagen en la siguiente caja"
     refresh_button_text: "Refrescar"
     message:
       user: "el código secreto no coincide con la imagen"
       debate: "el código secreto no coincide con la imagen"
   shared:
     tags_cloud:
-        tags: Temas
-    flag_as_inappropiate: Denunciar como inapropiado
-    undo_flag_as_inappropiate: Deshacer denunciar como inapropiado
+      tags: Temas
+    flag: Denunciar como inapropiado
+    unflag: Deshacer denuncia
     collective: Colectivo
+    search_form:
+      search_title: Buscar
+      search_button: Buscar
+      search_placeholder: "Buscar..."
   mailer:
     comment:
       subject: Alguien ha comentado en tu debate
@@ -144,3 +211,15 @@ es:
       all: "No tienes permiso para realizar la acción '%{action}' sobre %{subject}."
   welcome:
     last_debates: Últimos debates
+  omniauth:
+    finish_signup:
+      title: Añade tu email
+    twitter:
+      sign_in: Entra con Twitter
+      sign_up: Regístrate con Twitter
+    facebook:
+      sign_in: Entra con Facebook
+      sign_up: Regístrate con Facebook
+    google_oauth2:
+      sign_in: Entra con Google
+      sign_up: Regístrate con Google
